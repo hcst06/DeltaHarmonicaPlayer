@@ -16,7 +16,7 @@
 
 ## 下载与运行
 
-1. 从 GitHub Releases 下载“便携版 ZIP”。https://github.com/hcst06/DeltaHarmonicaPlayer/releases/tag/v1.0.0
+1. 从 GitHub([Releases](https://github.com/hcst06/DeltaHarmonicaPlayer/releases/tag/v1.0.0)) 下载“便携版 ZIP”。
 2. 完整解压到有足够空间、允许写入的磁盘目录。不要只复制其中的 EXE；`AudioTranscriber` 模型目录是音频扒谱所必需的。
 3. 运行 `App\DeltaHarmonicaPlayer.exe`，并接受 Windows 的管理员权限提示。
 4. 在游戏内打开口风琴后，回到播放器选择歌曲和轨道。按“开始演奏”后有 3 秒切回游戏，或直接在游戏中按 `F9`。
