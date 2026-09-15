@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="data:,">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:">
+  <title>音频转 MIDI</title>
+  <style>
+    :root { color-scheme: light; font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif; color: #252a34; background: #f6f7fa; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px; }
+    main { max-width: 760px; margin: 0 auto; }
+    h1 { margin: 0 0 6px; font-size: 26px; }
+    .lead { margin: 0 0 18px; color: #626b7c; line-height: 1.6; }
+    .card { padding: 20px; border: 1px solid #dfe3ea; border-radius: 14px; background: #fff; box-shadow: 0 4px 20px rgba(23, 35, 58, .06); }
+    .drop { min-height: 122px; display: grid; place-items: center; padding: 18px; border: 2px dashed #aeb8c8; border-radius: 12px; background: #fafbfe; text-align: center; cursor: pointer; transition: .15s ease; }
+    .drop:hover, .drop:focus, .drop.dragging { border-color: #2874f0; background: #f2f7ff; outline: none; }
+    .drop.has-file { border-style: solid; border-color: #77a6f7; }
+    .drop strong { display: block; margin-bottom: 7px; font-size: 17px; }
+    .drop span { color: #687386; font-size: 14px; }
+    #fileName { max-width: 650px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    input[type=file] { display: none; }
+    .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+    label.field { display: grid; gap: 7px; font-weight: 600; }
+    input[type=text], select { width: 100%; height: 42px; padding: 0 11px; border: 1px solid #cbd2dd; border-radius: 8px; background: #fff; color: inherit; font: inherit; }
+    input:focus, select:focus { border-color: #2874f0; outline: 2px solid rgba(40, 116, 240, .15); }
+    .check { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 9px; color: #3d4654; line-height: 1.45; }
+    .check input { margin-top: 4px; }
+    .tip { margin: 16px 0 0; padding: 11px 13px; border-radius: 9px; background: #fff5d9; color: #745912; font-size: 14px; line-height: 1.55; }
+    .progress-row { display: grid; grid-template-columns: 1fr 50px; gap: 10px; align-items: center; margin-top: 18px; }
+    progress { width: 100%; height: 16px; accent-color: #2874f0; }
+    #progressText { color: #4d5869; text-align: right; font-variant-numeric: tabular-nums; }
+    #status { min-height: 24px; margin: 9px 0 0; color: #505b6d; line-height: 1.5; }
+    #status[data-kind=error] { color: #b33a2b; }
+    #status[data-kind=success] { color: #237644; }
+    .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+    button { min-width: 118px; height: 42px; padding: 0 18px; border: 1px solid #c8d0dc; border-radius: 9px; background: #fff; color: #29313d; font: inherit; cursor: pointer; }
+    button.primary { min-width: 210px; border-color: #2874f0; background: #2874f0; color: #fff; font-weight: 700; }
+    button:hover:not(:disabled) { filter: brightness(.96); }
+    button:disabled { cursor: not-allowed; opacity: .52; }
+    [hidden] { display: none !important; }
+    footer { margin-top: 14px; color: #7b8493; font-size: 13px; text-align: center; }
+    @media (max-width: 620px) { body { padding: 14px; } .settings { grid-template-columns: 1fr; } .check { grid-column: 1; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>音频转 MIDI（AI 扒谱）</h1>
+    <p class="lead">全程在本机离线处理。选择一段人声、口琴或其他主旋律清晰的音频，完成后会自动加入 MIDI 曲库。</p>
+    <section class="card">
+      <div id="dropZone" class="drop" role="button" tabindex="0" aria-label="选择音频">
+        <div>
+          <strong id="fileName">点击选择，或把音频拖到这里</strong>
+          <span id="fileMeta">支持 MP3、WAV、FLAC、OGG；最长 5 分钟、最大 200 MB</span>
+        </div>
+      </div>
+      <input id="fileInput" type="file" accept=".mp3,.wav,.flac,.ogg,audio/mpeg,audio/wav,audio/flac,audio/ogg">
+
+      <div class="settings">
+        <label class="field">曲名
+          <input id="title" type="text" maxlength="100" placeholder="转换后在曲库中显示的名字">
+        </label>
+        <label class="field">识别模式
+          <select id="mode">
+            <option value="standard">标准（推荐）</option>
+            <option value="clean">干净（减少杂音）</option>
+            <option value="sensitive">灵敏（识别更多音）</option>
+          </select>
+        </label>
+        <label class="check">
+          <input id="gameRange" type="checkbox" checked>
+          <span>只保留游戏口风琴能演奏的音域（推荐，可减少无效低音和高音）</span>
+        </label>
+      </div>
+
+      <p class="tip">完整歌曲中的鼓点、伴奏和和弦可能被识别成多余音符。使用分离后的人声或独奏音轨，结果通常更准。</p>
+      <div class="progress-row">
+        <progress id="progress" max="100" value="0"></progress>
+        <span id="progressText">0%</span>
+      </div>
+      <p id="status">请选择音频开始。</p>
+      <div class="actions">
+        <button id="cancel" type="button" hidden>停止</button>
+        <button id="convert" class="primary" type="button" disabled>开始扒谱并加入曲库</button>
+      </div>
+    </section>
+    <footer>由 Spotify Basic Pitch 模型提供音高识别；结果建议试听后再演奏。</footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

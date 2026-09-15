@@ -1,0 +1,16 @@
+{
+  "name": "delta-harmonica-audio-transcriber",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@spotify/basic-pitch": "1.0.1",
+    "@tensorflow/tfjs": "3.21.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10"
+  }
+}

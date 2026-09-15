@@ -1,0 +1,43 @@
+# Visual Studio / .NET
+.vs/
+.idea/
+.vscode/
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+TestResults/
+coverage/
+
+# Node.js
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Generated offline transcriber bundle and model
+/app/DeltaHarmonicaPlayer/AudioTranscriber/
+
+# Build, packaging, experiments, and local downloads
+/out/
+/outputs/
+/work/
+/artifacts/
+/packages/
+*.nupkg
+*.snupkg
+*.zip
+
+# User library and runtime data
+/Songs/
+**/WebView2Data/
+*.log
+*.dmp
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
